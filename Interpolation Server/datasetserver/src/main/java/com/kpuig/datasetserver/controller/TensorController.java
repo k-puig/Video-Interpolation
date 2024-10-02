@@ -2,7 +2,6 @@ package com.kpuig.datasetserver.controller;
 
 import java.awt.Point;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
