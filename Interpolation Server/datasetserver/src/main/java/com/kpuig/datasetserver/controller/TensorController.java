@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kpuig.datasetserver.service.TensorService;
 
-
 @RestController
 public class TensorController {
     @Autowired
@@ -36,6 +35,20 @@ public class TensorController {
         }
         return ResponseEntity.ok(frameCount);
     }
+
+    @GetMapping("/{set}/{total_index}/tensor")
+    public ResponseEntity<ByteArrayResource> getTensorByTotalIndex(@PathVariable("set") String set, @PathVariable("total_index") long totalIndex) {
+        byte[] tensor = service.getTensorByTotalIndex(set, totalIndex);
+        if (tensor == null || tensor.length < 8) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+        ByteArrayResource dataResource = new ByteArrayResource(tensor);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=tensor.bin");
+        return new ResponseEntity<ByteArrayResource>(dataResource, headers, HttpStatus.OK);
+    }
+    
 
     @GetMapping("/{set}/{video_index}/frame_count")
     public ResponseEntity<Long> getFrameCount(@PathVariable("set") String set, @PathVariable("video_index") long videoIndex) {

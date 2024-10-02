@@ -233,6 +233,28 @@ public class TensorService {
         }
     }
 
+    public byte[] getTensorByTotalIndex(String set, Long totalIndex) {
+        if (totalIndex < 0L)
+            return null;
+
+        Long totalFrames = getTotalFrameCount(set);
+        if (totalIndex >= totalFrames)
+            return null;
+
+        Long videoCount = getVideoCount(set);
+
+        long pastRunningTotal = 0L;
+        long runningTotal = 0L;
+        for (long i = 0L; i < videoCount; i++) {
+            runningTotal += getFrameCount(set, i);
+            if (totalIndex < runningTotal) {
+                return getTensor(set, i, totalIndex - pastRunningTotal);
+            }
+            pastRunningTotal = runningTotal;
+        }
+        return null;
+    }
+
     // Returns a byte array of the form {widthInt, heightInt, RGB (3-byte) pixels Y-dominant}
     public byte[] getTensor(String set, Long videoIndex, long frameIndex) {
         Optional<SetData> setData = setDataRepo.findByType(set);
