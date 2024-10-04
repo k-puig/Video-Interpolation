@@ -36,6 +36,7 @@ dependencies {
 	implementation 'org.bytedeco:ffmpeg-platform:6.1.1-1.5.10'
 	implementation 'org.bytedeco:opencv-platform:4.9.0-1.5.10'
 	implementation 'org.bytedeco:javacpp:1.5.10'
+	implementation 'org.postgresql:postgresql:42.7.4'
 
 }
 

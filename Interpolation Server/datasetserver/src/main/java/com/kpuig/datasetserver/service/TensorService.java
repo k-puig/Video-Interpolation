@@ -15,6 +15,7 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kpuig.datasetserver.entity.SetData;
 import com.kpuig.datasetserver.entity.VideoData;
@@ -74,6 +75,7 @@ public class TensorService {
         testSetData.setType("test");
         testSetData.setTotalFrameCount(null);
         SetData savedTestSetData = setDataRepo.save(testSetData);
+        setDataRepo.flush();
 
         ArrayList<VideoData> trainVidData = new ArrayList<>();
         long i = 0;
@@ -120,8 +122,10 @@ public class TensorService {
         allVidData.addAll(testVidData);
 
         System.out.println("Pushing all preliminary video data to DB...");
-        vidDataRepo.saveAllAndFlush(allVidData);
+        vidDataRepo.saveAll(allVidData);
         System.out.println("DB initialization complete!");
+        vidDataRepo.flush();
+        VideoData.endInitialization();
     }
 
     public Long getVideoCount(String set) {
@@ -133,6 +137,7 @@ public class TensorService {
         return vidDataRepo.countBySetDataId(setData.get().getId());
     }
 
+    @Transactional
     public Long getTotalFrameCount(String set) {
         Optional<SetData> setData = setDataRepo.findByType(set);
         if (setData.isEmpty()) {
@@ -146,9 +151,15 @@ public class TensorService {
         Long videoCount = getVideoCount(set);
         for (long i = 0L; i < videoCount; i++) {
             long frameCount = getFrameCount(set, i);
+            VideoDataId vId = new VideoDataId();
+            vId.setSetDataId(setDataRepo.findByType(set).get().getId());
+            vId.setvIndex(i);
+            vidDataRepo.updateTotalIndexById(vId.getvIndex(), vId.getSetDataId(), totalFrameCount);
+            vidDataRepo.flush();
             totalFrameCount += frameCount;
         }
         setDataRepo.updateTotalFrameCountByType(set, totalFrameCount);
+        setDataRepo.flush();
         return totalFrameCount;
     }
 
@@ -179,6 +190,7 @@ public class TensorService {
             try {
                 Long frameCount = getFrameCountFromDirectory(directory + "/" + videoData.get().getFileName());
                 vidDataRepo.updateFrameCountByIndex(videoIndex, frameCount);
+                vidDataRepo.flush();
                 return frameCount;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -241,18 +253,11 @@ public class TensorService {
         if (totalIndex >= totalFrames)
             return null;
 
-        Long videoCount = getVideoCount(set);
-
-        long pastRunningTotal = 0L;
-        long runningTotal = 0L;
-        for (long i = 0L; i < videoCount; i++) {
-            runningTotal += getFrameCount(set, i);
-            if (totalIndex < runningTotal) {
-                return getTensor(set, i, totalIndex - pastRunningTotal);
-            }
-            pastRunningTotal = runningTotal;
-        }
-        return null;
+        VideoData vidData = vidDataRepo.findFirstByTotalIndexLessThanEqualOrderByTotalIndexDesc(totalIndex);
+        if (vidData == null)
+            return null;
+        SetData setData = setDataRepo.findById(vidData.getSetDataId()).get();
+        return getTensor(setData.getType(), vidData.getvIndex(), totalIndex - vidData.getTotalIndex());
     }
 
     // Returns a byte array of the form {widthInt, heightInt, RGB (3-byte) pixels Y-dominant}
@@ -338,7 +343,7 @@ public class TensorService {
         long frameCount = 0;
         try {
             grabber.start();
-            while (grabber.hasVideo() && grabber.grab() != null) {
+            while (grabber.hasVideo() && grabber.grabImage() != null) {
                 frameCount++;
             }
             grabber.stop();

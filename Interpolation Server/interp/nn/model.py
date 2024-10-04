@@ -7,9 +7,9 @@ class Interpolator(nn.Module):
     def __init__(self):
         super().__init__()
         
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv3d(64, 64, kernel_size=(3, 3, 2), stride=1, padding=(1, 1, 0))
-        self.tconv1 = nn.ConvTranspose2d(64, 3, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv3d(3, 64, kernel_size=(1, 3, 3), stride=1, padding=(0, 1, 1))
+        self.conv2 = nn.Conv3d(64, 64, kernel_size=(2, 3, 3), stride=1, padding=(0, 1, 1))
+        self.tconv1 = nn.ConvTranspose3d(64, 3, kernel_size=(1, 3, 3), stride=1, padding=(0, 1, 1))
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
     

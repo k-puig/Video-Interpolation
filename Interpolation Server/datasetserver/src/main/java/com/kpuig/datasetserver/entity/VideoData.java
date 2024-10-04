@@ -1,17 +1,25 @@
 package com.kpuig.datasetserver.entity;
 
+import org.springframework.data.domain.Persistable;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.Transient;
 
 @Entity
 @IdClass(VideoDataId.class)
-public class VideoData {
+public class VideoData implements Persistable<VideoDataId> {
+    @Transient
+    private static boolean initializing = true;
+
     @Id
     private Long vIndex;
 
     @Id
     private Long setDataId;
+
+    private Long totalIndex;
 
     private Long frameCount;
 
@@ -33,6 +41,14 @@ public class VideoData {
         this.setDataId = setDataId;
     }
 
+    public Long getTotalIndex() {
+        return totalIndex;
+    }
+
+    public void setTotalIndex(Long totalIndex) {
+        this.totalIndex = totalIndex;
+    }
+
     public Long getFrameCount() {
         return frameCount;
     }
@@ -47,5 +63,22 @@ public class VideoData {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    @Override
+    public VideoDataId getId() {
+        VideoDataId id = new VideoDataId();
+        id.setSetDataId(setDataId);
+        id.setvIndex(vIndex);
+        return id;
+    }
+
+    @Override
+    public boolean isNew() {
+        return initializing;
+    }
+
+    public static void endInitialization() {
+        initializing = false;
     }
 }
