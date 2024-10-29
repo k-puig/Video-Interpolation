@@ -232,3 +232,6 @@ gradle-app.setting
 train_data
 *secrets*.yml
 .vscode/
+._*
+train_data
+less_train_data
