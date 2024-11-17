@@ -18,7 +18,7 @@ class InterpolationServerView:
         self.model.eval()
         pass
     
-    def test_removethismethod() -> dict:
+    def test_removethismethod(self) -> dict:
         return {"message": "Hello world"}
     
     def interpolate_and_save(self, input_video:str, output_video:str):
