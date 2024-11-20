@@ -7,9 +7,8 @@ import interpolation.client.video.VideoTransfer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -20,66 +19,21 @@ public class App extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Interpolation Client");
-
-        // VideoTransfer instance
-        VideoTransfer videoTransfer = new VideoTransfer("http://example.com");
-
-        // Input field for URL
-        Label urlLabel = new Label("Enter URL:");
-        TextField urlField = new TextField();
-        urlField.setPromptText("http://example.com");
-
-        // File chooser for uploading a video
-        Button chooseFileButton = new Button("Choose Video File");
-        Label chosenFileLabel = new Label("No file selected");
-
-        // Upload button
-        Button uploadButton = new Button("Upload");
-        Label statusLabel = new Label("Status: Waiting for input");
-        Label downloadLabel = new Label();
-
-        // File selection action
-        FileChooser fileChooser = new FileChooser();
-        final File[] selectedFile = {null};
-        chooseFileButton.setOnAction(e -> {
-            File file = fileChooser.showOpenDialog(primaryStage);
-            if (file != null) {
-                chosenFileLabel.setText("Selected: " + file.getName());
-                selectedFile[0] = file;
-            } else {
-                chosenFileLabel.setText("No file selected");
+    public void start(Stage primaryStage) throws Exception {
+        primaryStage.setTitle("Hello World!");
+        Button btn = new Button();
+        btn.setText("Say 'Hello World'");
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+ 
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Hello World!");
             }
         });
-
-        // Upload button action
-        uploadButton.setOnAction(e -> {
-            if (selectedFile[0] != null) {
-                String url = urlField.getText();
-                if (!url.isEmpty()) {
-                    statusLabel.setText("Uploading to: " + url);
-                    String downloadLink = videoTransfer.uploadVideo(selectedFile[0]); // Simulated upload
-                    if (downloadLink != null) {
-                        downloadLabel.setText("Download Link: " + downloadLink);
-                    } else {
-                        downloadLabel.setText("Error: Unable to generate download link");
-                    }
-                } else {
-                    statusLabel.setText("Error: URL field is empty");
-                }
-            } else {
-                statusLabel.setText("Error: No file selected");
-            }
-        });
-
-        // Layout
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(15));
-        root.getChildren().addAll(urlLabel, urlField, chooseFileButton, chosenFileLabel, uploadButton, statusLabel, downloadLabel);
-
-        // Set up the scene and stage
-        primaryStage.setScene(new Scene(root, 400, 300));
+        
+        StackPane root = new StackPane();
+        root.getChildren().add(btn);
+        primaryStage.setScene(new Scene(root, 300, 250));
         primaryStage.show();
     }
 }
