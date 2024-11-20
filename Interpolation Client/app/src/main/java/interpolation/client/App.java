@@ -8,7 +8,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class App extends Application {
@@ -18,16 +20,64 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Hello World!");
+        primaryStage.setTitle("Video Frame Rate Enhancer");
         Button btn = new Button();
-        btn.setText("Say 'Hello World'");
+        btn.setText("Click Here to Continue");
+
+       
+        
+    
         btn.setOnAction(new EventHandler<ActionEvent>() {
  
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
+
+                Stage domain = new Stage();
+                domain.setTitle("Enter Website URL");
+
+                Button btn2 = new Button();
+                btn2.setText("OK");
+
+                TextField textField1 = new TextField();
+                textField1.setPromptText("Enter something here...");
+            
+
+                VBox popupLayout = new VBox(10);  
+                popupLayout.getChildren().addAll(textField1, btn2);
+
+                // Set the scene and show the pop-up window
+                Scene popupScene = new Scene(popupLayout, 250, 150);
+                domain.setScene(popupScene);
+                domain.show();
+
+                btn2.setOnAction(new EventHandler<ActionEvent>() {
+ 
+                    public void handle2(ActionEvent event) {
+        
+                        Stage domain2 = new Stage();
+                        domain2.setTitle("");
+        
+                     
+
+                        // Set the scene and show the pop-up window
+                        Scene popupScene2 = new Scene(popupLayout, 250, 150);
+                        domain2.setScene(popupScene2);
+                        domain2.show();
+        
+        
+                    }
+
+                    @Override
+                    public void handle(ActionEvent event) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'handle'");
+                    }
+                });
+
             }
         });
+
+       
         
         StackPane root = new StackPane();
         root.getChildren().add(btn);
