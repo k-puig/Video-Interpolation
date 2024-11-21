@@ -3,16 +3,21 @@
  */
 package interpolation.client;
 
+import java.io.File;
+
 import interpolation.client.video.VideoTransfer;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
 
 public class App extends Application {
     public static void main(String[] args) {
@@ -20,66 +25,87 @@ public class App extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Interpolation Client");
+    public void start(Stage primaryStage) throws Exception {
+        primaryStage.setTitle("Video Frame Rate Enhancer");
+        Button btn = new Button();
+        btn.setText("Click Here to Continue");
 
-        // VideoTransfer instance
-        VideoTransfer videoTransfer = new VideoTransfer("http://example.com");
+       
+        
+    
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+ 
+            @Override
+            public void handle(ActionEvent event) {
+            primaryStage.setTitle("Interpolation Client");
 
-        // Input field for URL
-        Label urlLabel = new Label("Enter URL:");
-        TextField urlField = new TextField();
-        urlField.setPromptText("http://example.com");
+            // VideoTransfer instance
+            VideoTransfer videoTransfer = new VideoTransfer("http://example.com");
 
-        // File chooser for uploading a video
-        Button chooseFileButton = new Button("Choose Video File");
-        Label chosenFileLabel = new Label("No file selected");
+            // Input field for URL
+            Label urlLabel = new Label("Enter URL:");
+            TextField urlField = new TextField();
+            urlField.setPromptText("http://example.com");
 
-        // Upload button
-        Button uploadButton = new Button("Upload");
-        Label statusLabel = new Label("Status: Waiting for input");
-        Label downloadLabel = new Label();
+            // File chooser for uploading a video
+            Button chooseFileButton = new Button("Choose Video File");
+            Label chosenFileLabel = new Label("No file selected");
 
-        // File selection action
-        FileChooser fileChooser = new FileChooser();
-        final File[] selectedFile = {null};
-        chooseFileButton.setOnAction(e -> {
-            File file = fileChooser.showOpenDialog(primaryStage);
-            if (file != null) {
-                chosenFileLabel.setText("Selected: " + file.getName());
-                selectedFile[0] = file;
-            } else {
-                chosenFileLabel.setText("No file selected");
-            }
-        });
+            // Upload button
+            Button uploadButton = new Button("Upload");
+            Label statusLabel = new Label("Status: Waiting for input");
+            Label downloadLabel = new Label();
 
-        // Upload button action
-        uploadButton.setOnAction(e -> {
-            if (selectedFile[0] != null) {
-                String url = urlField.getText();
-                if (!url.isEmpty()) {
-                    statusLabel.setText("Uploading to: " + url);
-                    String downloadLink = videoTransfer.uploadVideo(selectedFile[0]); // Simulated upload
-                    if (downloadLink != null) {
-                        downloadLabel.setText("Download Link: " + downloadLink);
+            // File selection action
+            FileChooser fileChooser = new FileChooser();
+            final File[] selectedFile = {null};
+            chooseFileButton.setOnAction(e -> {
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    chosenFileLabel.setText("Selected: " + file.getName());
+                    selectedFile[0] = file;
+                } else {
+                    chosenFileLabel.setText("No file selected");
+                }
+            });
+
+            // Upload button action
+            uploadButton.setOnAction(e -> {
+                if (selectedFile[0] != null) {
+                    String url = urlField.getText();
+                    if (!url.isEmpty()) {
+                        statusLabel.setText("Uploading to: " + url);
+                        String downloadLink = videoTransfer.uploadVideo(selectedFile[0]); // Simulated upload
+                        if (downloadLink != null) {
+                            downloadLabel.setText("Download Link: " + downloadLink);
+                        } else {
+                            downloadLabel.setText("Error: Unable to generate download link");
+                        }
                     } else {
-                        downloadLabel.setText("Error: Unable to generate download link");
+                        statusLabel.setText("Error: URL field is empty");
                     }
                 } else {
-                    statusLabel.setText("Error: URL field is empty");
+                    statusLabel.setText("Error: No file selected");
                 }
-            } else {
-                statusLabel.setText("Error: No file selected");
-            }
-        });
-
-        // Layout
+            });                
+             // Layout
         VBox root = new VBox(10);
         root.setPadding(new Insets(15));
         root.getChildren().addAll(urlLabel, urlField, chooseFileButton, chosenFileLabel, uploadButton, statusLabel, downloadLabel);
 
         // Set up the scene and stage
         primaryStage.setScene(new Scene(root, 400, 300));
+        primaryStage.show();
+            
+
+        }
+        });
+
+       
+        
+        StackPane root = new StackPane();
+        root.getChildren().add(btn);
+        primaryStage.setScene(new Scene(root, 300, 250));
         primaryStage.show();
     }
 }
