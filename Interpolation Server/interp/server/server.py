@@ -3,10 +3,15 @@ import interp.nn.model as model
 import torch
 import os
 
+<<<<<<< HEAD
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.routing import APIRouter
 from fastapi.responses import StreamingResponse
 from pathlib import Path
+=======
+from fastapi import FastAPI
+from fastapi.routing import APIRouter, Response
+>>>>>>> bb7756df655089152aa88eaa29071939b8b6a216
 
 class InterpolationServerView:
     def __init__(self, output_dir:str, nn_params_file:str):
@@ -18,13 +23,14 @@ class InterpolationServerView:
         
         self.output_dir.mkdir(exist_ok=True)
         self.output_dir = output_dir
-        self.model = model.Interpolator()
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = self.model.to(device)
-        self.model.load_state_dict(torch.load(nn_params_file, weights_only=True))
-        self.model.eval()
+        #self.model = model.Interpolator()
+        #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        #self.model = self.model.to(device)
+        #self.model.load_state_dict(torch.load(nn_params_file, weights_only=True))
+        #self.model.eval()
         pass
     
+<<<<<<< HEAD
     async def upload_video(self, file: UploadFile = File(...)):
         # Generate a future filename
         future_filename = file.filename
@@ -51,7 +57,14 @@ class InterpolationServerView:
     
     
     def test_removethismethod() -> dict:
+=======
+    def test_old(self) -> dict:
+>>>>>>> bb7756df655089152aa88eaa29071939b8b6a216
         return {"message": "Hello world"}
+    
+    def test_removethismethod(self) -> Response:
+        content = b'Hello world'
+        return Response(content=content, media_type='application/octet-stream')
     
     def interpolate_and_save(self, input_video:str, output_video:str):
         pass
