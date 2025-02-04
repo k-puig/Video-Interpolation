@@ -38,15 +38,7 @@ import sys
 #    
 #    trainer.run(trainset, testset, validateset, batch_size=16, shuffle_subset=5000)
 
-import interp.server.server as srv
-import uvicorn
-from fastapi import FastAPI
-
 def main() -> int:
-    app = FastAPI()
-    server = srv.InterpolationServerView("output", "model.pt")
-    app.include_router(server.router)
-    uvicorn.run(app, host="127.0.0.1", port=8080)
     return 0
 
 if __name__ == '__main__':

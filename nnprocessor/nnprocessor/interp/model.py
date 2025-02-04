@@ -11,7 +11,7 @@ class Interpolator(nn.Module):
         self.conv2 = nn.Conv3d(64, 64, kernel_size=(2, 3, 3), stride=1, padding=(0, 1, 1))
         self.tconv1 = nn.ConvTranspose3d(64, 3, kernel_size=(1, 3, 3), stride=1, padding=(0, 1, 1))
         self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
     
     def forward(self, x):
         out = self.conv1(x)
@@ -21,6 +21,6 @@ class Interpolator(nn.Module):
         out = self.relu(out)
         
         out = self.tconv1(out)
-        out = self.sigmoid(out)
+        out = self.tanh(out)
         
         return out
