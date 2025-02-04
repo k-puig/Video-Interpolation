@@ -20,7 +20,7 @@ class SingleVideoDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         video_frames, audio_frames, metadata = io.read_video(self.path, output_format="TCHW", pts_unit="sec")
-        video_frames = video_frames / 255.0
+        video_frames = (2.0 * video_frames / 255.0) - 1.0
         input_frames = video_frames[index : index + 3 : 2].permute(1, 0, 2, 3)
         output_frames = video_frames[index + 1 : index + 2].permute(1, 0, 2, 3)
         return input_frames, output_frames
