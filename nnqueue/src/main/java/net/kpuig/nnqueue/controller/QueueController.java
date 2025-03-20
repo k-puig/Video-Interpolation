@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import net.kpuig.nnqueue.controller.response.FileDataResponse;
 import net.kpuig.nnqueue.controller.response.FileStatusResponse;
 import net.kpuig.nnqueue.service.FileHandlingService;
+import net.kpuig.nnqueue.service.data.FileStatus;
+
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +48,20 @@ public class QueueController {
 
     @GetMapping("/status/{file}")
     public ResponseEntity<FileStatusResponse> getFileStatus(@PathVariable String file) {
-        return null;
+        FileStatus status = queueService.getStatus(file);
+
+        FileStatusResponse response = new FileStatusResponse();
+
+        response.setStatus(status.toString());
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/download/{file}")
-    public ResponseEntity<Resource> downloadFile() {
-        return null;
+    public ResponseEntity<Resource> downloadFile(@PathVariable String file) {
+        Resource resource = queueService.getDownloadableFileResource(file);
+        if (resource == null)
+            return ResponseEntity.badRequest().body(null);
+        return ResponseEntity.ok().body(resource);
     }
 
 }

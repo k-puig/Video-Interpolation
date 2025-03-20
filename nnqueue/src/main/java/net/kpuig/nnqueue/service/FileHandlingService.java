@@ -13,7 +13,7 @@ import net.kpuig.nnqueue.service.data.*;
 
 @Service
 public class FileHandlingService {
-    private static final String QUEUE_ROOT_DIRECTORY = "nnqueue/";
+    private static final String QUEUE_ROOT_DIRECTORY = "process_queue/";
     private static final String ENQUEUE_DIRECTORY = QUEUE_ROOT_DIRECTORY + "queue/";
     private static final String ERROR_DIRECTORY = QUEUE_ROOT_DIRECTORY + "error/";
     private static final String PROCESSING_DIRECTORY = QUEUE_ROOT_DIRECTORY + "processing/";
@@ -72,12 +72,16 @@ public class FileHandlingService {
             return FileStatus.QUEUED;
         }
 
-        return null;
+        return FileStatus.NOTFOUND;
     }
 
     public FileSystemResource getDownloadableFileResource(String fileName) {
-        // Type your own implementation here
-        return null;
+        if (getStatus(fileName) != FileStatus.PROCESSED)
+            return null;
+        
+        File downloadFile = new File(PROCESSED_DIRECTORY + fileName);
+        FileSystemResource resource = new FileSystemResource(downloadFile);
+        return resource;
     }
 
     private static void initializeQueueDirectories() throws Exception {
