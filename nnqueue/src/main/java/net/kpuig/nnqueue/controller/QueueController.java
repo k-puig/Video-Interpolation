@@ -26,10 +26,6 @@ public class QueueController {
 
     @PostMapping("/upload")
     public ResponseEntity<FileDataResponse> uploadVideo(@RequestParam MultipartFile file) throws IOException {
-        /* // Restrict file size */
-        /* if (file.getSize() > maxFileSize) */
-        /*     return ResponseEntity.badRequest().body(null); */
-
         // Get the file's extension
         String fileName = file.getOriginalFilename();
         int extIdx = fileName.lastIndexOf(".");
