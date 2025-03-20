@@ -22,7 +22,7 @@ public class FileHandlingService {
         return id;
     }
 
-    public FileStatus getStatue(String id, String fileName) {
+    public FileStatus getStatus(String id, String fileName) {
         return null;
     }
 
