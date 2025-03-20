@@ -6,8 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 import net.kpuig.nnqueue.controller.response.FileDataResponse;
 import net.kpuig.nnqueue.controller.response.FileStatusResponse;
 import net.kpuig.nnqueue.service.FileHandlingService;
-import net.kpuig.nnqueue.service.data.FileId;
-
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,22 +26,34 @@ public class QueueController {
 
     @PostMapping("/upload")
     public ResponseEntity<FileDataResponse> uploadVideo(@RequestParam MultipartFile file) throws IOException {
-        if (file.getSize() > maxFileSize)
+        /* // Restrict file size */
+        /* if (file.getSize() > maxFileSize) */
+        /*     return ResponseEntity.badRequest().body(null); */
+
+        // Get the file's extension
+        String fileName = file.getOriginalFilename();
+        int extIdx = fileName.lastIndexOf(".");
+        if (extIdx < 0)
             return ResponseEntity.badRequest().body(null);
-        FileId id = queueService.enqueueFile(file.getOriginalFilename(), file.getInputStream());
+        String fileExtension = fileName.substring(extIdx);
+        if (fileExtension.length() < 2)
+            return ResponseEntity.badRequest().body(null);
+
+        // Enqueue the file
+        String newFileName = queueService.enqueueFile(fileExtension, file.getInputStream());
         
+        // Respond
         FileDataResponse response = new FileDataResponse();
-        response.setId(id.getId());
-        response.setFileName(file.getOriginalFilename());
+        response.setFileName(newFileName);
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/status/{id}/{file}")
-    public ResponseEntity<FileStatusResponse> getFileStatus(@PathVariable String id, @PathVariable String file) {
+    @GetMapping("/status/{file}")
+    public ResponseEntity<FileStatusResponse> getFileStatus(@PathVariable String file) {
         return null;
     }
 
-    @GetMapping("/download/{id}/{file}")
+    @GetMapping("/download/{file}")
     public ResponseEntity<Resource> downloadFile() {
         return null;
     }

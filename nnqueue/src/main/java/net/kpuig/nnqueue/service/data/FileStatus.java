@@ -1,5 +1,8 @@
 package net.kpuig.nnqueue.service.data;
 
-public class FileStatus {
-    
+public enum FileStatus {
+    PROCESSED,
+    PROCESSING,
+    ERROR,
+    QUEUED
 }
