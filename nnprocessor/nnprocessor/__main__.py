@@ -1,14 +1,15 @@
 import sys
 
-#import interp.nn.dataset as ds
-#import interp.nn.model as md
-#import interp.nn.train as tr
-#
-#import torch
-#import torch.nn as nn
-#import torch.nn.functional as F
-#import torch.optim as optim
-#
+import nnprocessor.interp.dataset as ds
+import nnprocessor.interp.model as md
+import nnprocessor.interp.train as tr
+import nnprocessor.queue.client as qc
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
 #def test_train():
 #    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 #    svd = ds.SingleVideoDataset("train_data/test.mp4")
@@ -38,7 +39,14 @@ import sys
 #    
 #    trainer.run(trainset, testset, validateset, batch_size=16, shuffle_subset=5000)
 
+def test_queueclient():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = md.Interpolator()
+    client = qc.QueueClient("process_queue/", model, device)
+    client.run()
+
 def main() -> int:
+    test_queueclient()
     return 0
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -14,10 +15,14 @@ import net.kpuig.nnqueue.service.data.*;
 @Service
 public class FileHandlingService {
     private static final String QUEUE_ROOT_DIRECTORY = "process_queue/";
+    
     private static final String ENQUEUE_DIRECTORY = QUEUE_ROOT_DIRECTORY + "queue/";
     private static final String ERROR_DIRECTORY = QUEUE_ROOT_DIRECTORY + "error/";
     private static final String PROCESSING_DIRECTORY = QUEUE_ROOT_DIRECTORY + "processing/";
     private static final String PROCESSED_DIRECTORY = QUEUE_ROOT_DIRECTORY + "processed/";
+    private static final String TEMP_DIRECTORY = QUEUE_ROOT_DIRECTORY + "temp/";
+    
+    private static final String PROCESSED_VIDEO_EXTENSION = ".mp4";
 
     private FileIdService fileIdService;
 
@@ -26,13 +31,13 @@ public class FileHandlingService {
         initializeQueueDirectories();
     }
 
-    public String enqueueFile(String fileExtension, InputStream byteStream) throws IOException {
+    public String enqueueFile(InputStream byteStream) throws IOException {
         // Create a new file name
         FileId id = fileIdService.generateId();
-        String fileName = id.getId() + fileExtension;
+        String fileName = id.getId() + PROCESSED_VIDEO_EXTENSION;
 
         // Save file to appropriate directory
-        File file = new File(ENQUEUE_DIRECTORY + fileName);
+        File file = new File(TEMP_DIRECTORY + fileName);
         if (file.exists()) {
             return null;
         }
@@ -47,6 +52,8 @@ public class FileHandlingService {
         }
         fileOut.flush();
         fileOut.close();
+
+        Files.move(file.toPath(), new File(ENQUEUE_DIRECTORY + fileName).toPath());
 
         return fileName;
     }
@@ -95,6 +102,9 @@ public class FileHandlingService {
         file.mkdirs();
 
         file = new File(ENQUEUE_DIRECTORY);
+        file.mkdirs();
+
+        file = new File(TEMP_DIRECTORY);
         file.mkdirs();
     }
 

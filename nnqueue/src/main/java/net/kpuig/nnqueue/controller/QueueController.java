@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/queue")
 public class QueueController {
-    private final long maxFileSize = 200000000; // 200 MB
     @Autowired private FileHandlingService queueService;
 
     @PostMapping("/upload")
@@ -38,7 +37,7 @@ public class QueueController {
             return ResponseEntity.badRequest().body(null);
 
         // Enqueue the file
-        String newFileName = queueService.enqueueFile(fileExtension, file.getInputStream());
+        String newFileName = queueService.enqueueFile(file.getInputStream());
         
         // Respond
         FileDataResponse response = new FileDataResponse();
