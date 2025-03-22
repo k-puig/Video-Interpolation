@@ -17,36 +17,25 @@ import torch.optim as optim
 #    trainer = tr.Trainer(model, device=device)
 #    trainer.train(svd)
 #
-#def test_fulltrain():
-#    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#    model = md.Interpolator()
-#    trainer = tr.Trainer(model, device=device)
-#    
-#    trainset = ds.VideoFolderDataset("train_data/train")
-#    validateset = ds.VideoFolderDataset("train_data/validate")
-#    testset = ds.VideoFolderDataset("train_data/test")
-#    
-#    trainer.run(trainset, testset, validateset)
-#
-#def test_servertrain():
-#    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#    model = md.Interpolator()
-#    trainer = tr.Trainer(model, device=device)
-#    
-#    trainset = ds.TensorServerDataset("http://localhost:8080", "train")
-#    validateset = ds.TensorServerDataset("http://localhost:8080", "validate")
-#    testset = ds.TensorServerDataset("http://localhost:8080", "test")
-#    
-#    trainer.run(trainset, testset, validateset, batch_size=16, shuffle_subset=5000)
-
-def test_queueclient():
+def fulltrain(model):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = md.Interpolator()
-    client = qc.QueueClient("process_queue/", model, device)
+    trainer = tr.Trainer("interp.pt", model, device=device)
+    
+    trainset = ds.VideoFolderDataset("train_data/train", csv_cache="train_data/train.csv")
+    validateset = ds.VideoFolderDataset("train_data/validate", csv_cache="train_data/validate.csv")
+    testset = ds.VideoFolderDataset("train_data/test", csv_cache="train_data/test.csv")
+    
+    trainer.run(trainset, testset, validateset, subset_size=10000, epochs=100, batch_size=32, autosave=True)
+
+def queueclient(model):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    client = qc.QueueClient("process_queue/", model, torch.load("interp.pt"), device)
     client.run()
 
 def main() -> int:
-    test_queueclient()
+    model = md.Interpolator()
+    fulltrain(model)
+    queueclient(model)
     return 0
 
 if __name__ == '__main__':

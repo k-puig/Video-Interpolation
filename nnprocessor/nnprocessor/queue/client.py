@@ -11,9 +11,12 @@ from nnprocessor.interp.model import Interpolator
 
 class QueueClient():
     MAX_CONSECUTIVE_EXCEPTIONS = 20
+    MAX_PIXEL_COUNT = 2500 * 2500
 
-    def __init__(self, root_dir:str, model:Interpolator, device):
+    def __init__(self, root_dir:str, model:Interpolator, state_dict, device):
         self.model = model.to(device)
+        self.model.load_state_dict(state_dict)
+        self.model.eval()
         self.device = device
 
         if len(root_dir) > 0 and root_dir[-1] != "/":
@@ -38,6 +41,7 @@ class QueueClient():
         self._initialize_queuedir()
         self._populate_toprocess()
         self._consecutive_exceptions = 0
+        print("Queue client started!")
         while self.running:
             if self._consecutive_exceptions >= QueueClient.MAX_CONSECUTIVE_EXCEPTIONS:
                 self.running = False
@@ -73,9 +77,14 @@ class QueueClient():
                     duration = frame_count / frame_rate
                     new_frame_rate = int(1000.0 * ((frame_count * 2 - 1) / duration)) / 1000.0
                     frame_size = (int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+                    if frame_size[0] * frame_size[1] > QueueClient.MAX_PIXEL_COUNT:
+                        self._push_err(cur_video_str)
+                        self._release_cap()
+                        continue
                 except:
                     self._push_err(cur_video_str)
                     self._release_cap()
+                    continue
 
                 # Open buffer video
                 self._try_make_videowriter(self.buffer_video, new_frame_rate, frame_size)
