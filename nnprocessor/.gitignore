@@ -175,3 +175,8 @@ cython_debug/
 
 ### VS Code ###
 .vscode/
+
+### Local ###
+process_queue/
+train_data/
+*.pt

@@ -6,12 +6,13 @@ import org.springframework.web.multipart.MultipartFile;
 import net.kpuig.nnqueue.controller.response.FileDataResponse;
 import net.kpuig.nnqueue.controller.response.FileStatusResponse;
 import net.kpuig.nnqueue.service.FileHandlingService;
-import net.kpuig.nnqueue.service.data.FileId;
+import net.kpuig.nnqueue.service.data.FileStatus;
 
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,29 +24,47 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/queue")
 public class QueueController {
-    private final long maxFileSize = 200000000; // 200 MB
     @Autowired private FileHandlingService queueService;
 
     @PostMapping("/upload")
     public ResponseEntity<FileDataResponse> uploadVideo(@RequestParam MultipartFile file) throws IOException {
-        if (file.getSize() > maxFileSize)
+        // Get the file's extension
+        String fileName = file.getOriginalFilename();
+        int extIdx = fileName.lastIndexOf(".");
+        if (extIdx < 0)
             return ResponseEntity.badRequest().body(null);
-        FileId id = queueService.enqueueFile(file.getOriginalFilename(), file.getInputStream());
+        String fileExtension = fileName.substring(extIdx);
+        if (fileExtension.length() < 2)
+            return ResponseEntity.badRequest().body(null);
+
+        // Enqueue the file
+        String newFileName = queueService.enqueueFile(file.getInputStream());
         
+        // Respond
         FileDataResponse response = new FileDataResponse();
-        response.setId(id.getId());
-        response.setFileName(file.getOriginalFilename());
+        response.setFileName(newFileName);
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/status/{id}/{file}")
-    public ResponseEntity<FileStatusResponse> getFileStatus(@PathVariable String id, @PathVariable String file) {
-        return null;
+    @GetMapping("/status/{file}")
+    public ResponseEntity<FileStatusResponse> getFileStatus(@PathVariable String file) {
+        FileStatus status = queueService.getStatus(file);
+
+        FileStatusResponse response = new FileStatusResponse();
+
+        response.setStatus(status.toString());
+        return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/download/{id}/{file}")
-    public ResponseEntity<Resource> downloadFile() {
-        return null;
+    @GetMapping("/download/{file}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String file) {
+        Resource resource = queueService.getDownloadableFileResource(file);
+        if (resource == null)
+            return ResponseEntity.badRequest().body(null);
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
 }

@@ -5,5 +5,4 @@ import lombok.Data;
 @Data
 public class FileDataResponse {
     private String fileName;
-    private String id;
 }

@@ -7,20 +7,20 @@ class Interpolator(nn.Module):
     def __init__(self):
         super().__init__()
         
-        self.conv1 = nn.Conv3d(3, 64, kernel_size=(1, 3, 3), stride=1, padding=(0, 1, 1))
-        self.conv2 = nn.Conv3d(64, 64, kernel_size=(2, 3, 3), stride=1, padding=(0, 1, 1))
-        self.tconv1 = nn.ConvTranspose3d(64, 3, kernel_size=(1, 3, 3), stride=1, padding=(0, 1, 1))
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1)
+        self.tconv1 = nn.ConvTranspose2d(64, 3, kernel_size=3, stride=1, padding=1)
         self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
-    
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.relu(out)
+        self.tanh = nn.Tanh()
+
+    def forward(self, frame1, frame2):
+        feat1 = self.relu(self.conv1(frame1))
+        feat2 = self.relu(self.conv1(frame2))
         
-        out = self.conv2(out)
-        out = self.relu(out)
+        combined = torch.cat([feat1, feat2], dim=1)
         
+        out = self.relu(self.conv2(combined))
         out = self.tconv1(out)
-        out = self.sigmoid(out)
+        out = self.tanh(out)
         
         return out

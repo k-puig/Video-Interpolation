@@ -1,14 +1,15 @@
 import sys
 
-#import interp.nn.dataset as ds
-#import interp.nn.model as md
-#import interp.nn.train as tr
-#
-#import torch
-#import torch.nn as nn
-#import torch.nn.functional as F
-#import torch.optim as optim
-#
+import nnprocessor.interp.dataset as ds
+import nnprocessor.interp.model as md
+import nnprocessor.interp.train as tr
+import nnprocessor.queue.client as qc
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
 #def test_train():
 #    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 #    svd = ds.SingleVideoDataset("train_data/test.mp4")
@@ -16,37 +17,25 @@ import sys
 #    trainer = tr.Trainer(model, device=device)
 #    trainer.train(svd)
 #
-#def test_fulltrain():
-#    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#    model = md.Interpolator()
-#    trainer = tr.Trainer(model, device=device)
-#    
-#    trainset = ds.VideoFolderDataset("train_data/train")
-#    validateset = ds.VideoFolderDataset("train_data/validate")
-#    testset = ds.VideoFolderDataset("train_data/test")
-#    
-#    trainer.run(trainset, testset, validateset)
-#
-#def test_servertrain():
-#    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#    model = md.Interpolator()
-#    trainer = tr.Trainer(model, device=device)
-#    
-#    trainset = ds.TensorServerDataset("http://localhost:8080", "train")
-#    validateset = ds.TensorServerDataset("http://localhost:8080", "validate")
-#    testset = ds.TensorServerDataset("http://localhost:8080", "test")
-#    
-#    trainer.run(trainset, testset, validateset, batch_size=16, shuffle_subset=5000)
+def fulltrain(model):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    trainer = tr.Trainer("interp.pt", model, device=device)
+    
+    trainset = ds.VideoFolderDataset("train_data/train", csv_cache="train_data/train.csv")
+    validateset = ds.VideoFolderDataset("train_data/validate", csv_cache="train_data/validate.csv")
+    testset = ds.VideoFolderDataset("train_data/test", csv_cache="train_data/test.csv")
+    
+    trainer.run(trainset, testset, validateset, subset_size=10000, epochs=100, batch_size=32, autosave=True)
 
-import interp.server.server as srv
-import uvicorn
-from fastapi import FastAPI
+def queueclient(model):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    client = qc.QueueClient("process_queue/", model, torch.load("interp.pt"), device)
+    client.run()
 
 def main() -> int:
-    app = FastAPI()
-    server = srv.InterpolationServerView("output", "model.pt")
-    app.include_router(server.router)
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    model = md.Interpolator()
+    fulltrain(model)
+    queueclient(model)
     return 0
 
 if __name__ == '__main__':
