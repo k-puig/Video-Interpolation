@@ -10,8 +10,8 @@ import torch
 from nnprocessor.interp.model import Interpolator
 
 class QueueClient():
-    MAX_CONSECUTIVE_EXCEPTIONS = 20
-    MAX_PIXEL_COUNT = 2500 * 2500
+    MAX_CONSECUTIVE_EXCEPTIONS = 50
+    MAX_PIXEL_COUNT = 1024 * 1024
 
     def __init__(self, root_dir:str, model:Interpolator, state_dict, device):
         self.model = model.to(device)
@@ -41,12 +41,13 @@ class QueueClient():
         self._initialize_queuedir()
         self._populate_toprocess()
         self._consecutive_exceptions = 0
+        self._recover_from_exception = False
         print("Queue client started!")
         while self.running:
             if self._consecutive_exceptions >= QueueClient.MAX_CONSECUTIVE_EXCEPTIONS:
-                self.running = False
-                print(f"Maximum number of consecutive exceptions ({QueueClient.MAX_CONSECUTIVE_EXCEPTIONS}) reached. Terminating nnqueue client.")
-                break
+                print(f"Maximum number of consecutive exceptions ({QueueClient.MAX_CONSECUTIVE_EXCEPTIONS}) reached. Removing current video.")
+                self._consecutive_exceptions = 0
+                self._recover_from_exception = True
 
             try:
                 # Await videos to process 
@@ -57,6 +58,10 @@ class QueueClient():
 
                 # Get current video to be processed
                 cur_video_str = self._pop_file()
+                if self._recover_from_exception:
+                    self._push_err(cur_video_str)
+                    self._recover_from_exception = False
+                    continue
                 if "." not in cur_video_str:
                     self._push_err(cur_video_str)
                     continue
