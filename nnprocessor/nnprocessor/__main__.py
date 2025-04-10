@@ -17,24 +17,25 @@ import torch.optim as optim
 #    trainer = tr.Trainer(model, device=device)
 #    trainer.train(svd)
 #
-def fulltrain(model):
+def fulltrain(model, discriminator):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    trainer = tr.Trainer("interp.pt", model, device=device)
+    trainer = tr.Trainer("interp-gan.pt", model, discriminator, device=device)
     
     trainset = ds.VideoFolderDataset("train_data/train", csv_cache="train_data/train.csv")
     validateset = ds.VideoFolderDataset("train_data/validate", csv_cache="train_data/validate.csv")
     testset = ds.VideoFolderDataset("train_data/test", csv_cache="train_data/test.csv")
     
-    trainer.run(trainset, testset, validateset, subset_size=10000, epochs=100, batch_size=32, autosave=True)
+    print(trainer.run(trainset, testset, validateset, subset_size=5000, epochs=100, batch_size=12, autosave=True))
 
 def queueclient(model):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    client = qc.QueueClient("process_queue/", model, torch.load("interp.pt"), device)
+    client = qc.QueueClient("/smb/ssd/process_queue/", model, torch.load("interp-gan.pt"), device)
     client.run()
 
 def main() -> int:
-    model = md.Interpolator()
-    fulltrain(model)
+    model = md.Interpolator().half()
+    discriminator = md.Discriminator().half()
+    fulltrain(model, discriminator)
     queueclient(model)
     return 0
 

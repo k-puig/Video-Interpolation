@@ -6,6 +6,7 @@ import cv2
 from moviepy import VideoFileClip
 import numpy as np
 import torch
+import torch.nn.functional as nnf
 
 from nnprocessor.interp.model import Interpolator
 
@@ -58,6 +59,7 @@ class QueueClient():
 
                 # Get current video to be processed
                 cur_video_str = self._pop_file()
+                print(f"Beginning to process {cur_video_str}")
                 if self._recover_from_exception:
                     self._push_err(cur_video_str)
                     self._recover_from_exception = False
@@ -76,6 +78,7 @@ class QueueClient():
                 final_video_buf_str = self.buffer_directory + video_proper_name
                 
                 # Get video properties
+                resize = None
                 try:
                     frame_count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
                     frame_rate = self.cap.get(cv2.CAP_PROP_FPS)
@@ -83,9 +86,10 @@ class QueueClient():
                     new_frame_rate = int(1000.0 * ((frame_count * 2 - 1) / duration)) / 1000.0
                     frame_size = (int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
                     if frame_size[0] * frame_size[1] > QueueClient.MAX_PIXEL_COUNT:
-                        self._push_err(cur_video_str)
-                        self._release_cap()
-                        continue
+                        scale_ratio = (QueueClient.MAX_PIXEL_COUNT / (frame_size[0] * frame_size[1])) ** 0.5
+                        new_width = int(frame_size[0] * scale_ratio)
+                        new_height = int(frame_size[1] * scale_ratio)
+                        resize = (new_width, new_height)
                 except:
                     self._push_err(cur_video_str)
                     self._release_cap()
@@ -121,8 +125,14 @@ class QueueClient():
                             break
 
                     # Generate frame
-                    t_frame1 = ((torch.from_numpy(thisframe).float() * 2.0 / 255.0) - 1.0).permute(2, 1, 0).unsqueeze(0)
-                    t_frame2 = ((torch.from_numpy(nextframe).float() * 2.0 / 255.0) - 1.0).permute(2, 1, 0).unsqueeze(0)
+                    t_frame1 = ((torch.from_numpy(thisframe).float() * 2.0 / 255.0) - 1.0).permute(2, 1, 0).unsqueeze(0).half()
+                    t_frame2 = ((torch.from_numpy(nextframe).float() * 2.0 / 255.0) - 1.0).permute(2, 1, 0).unsqueeze(0).half()
+
+                    # Resize if necessary
+                    if resize != None:
+                        t_frame1 = nnf.interpolate(t_frame1, size=resize, mode='bicubic', align_corners=False)
+                        t_frame2 = nnf.interpolate(t_frame2, size=resize, mode='bicubic', align_corners=False)
+
                     t_framegen = self._gen_frame(t_frame1, t_frame2)
                     framegen = ((t_framegen + 1.0) * 255.0 / 2.0).byte().detach().squeeze(0).permute(2, 1, 0).cpu().numpy()
 
