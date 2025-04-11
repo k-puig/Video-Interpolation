@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function UploadPage() {
+  const [inputFileName, setInputFileName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [infoMessage, setInfoMessage] = useState('');
   const navigate = useNavigate();
@@ -43,20 +44,44 @@ function UploadPage() {
     }
   };
 
+  const handleInputFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      e.target.value = e.target.value.replace("\n", "");
+      setInputFileName(e.target.value);
+    }
+  };
+
+  const handleSwitchToStatus = () => {
+    navigate(`/status?file=${inputFileName}`)
+  };
+
   return (
     <div className="container">
       <h1>Video Interpolator</h1>
-      <p>Simply upload a video to double its framerate.</p>
-      <label htmlFor="file">Select video file:</label>
-      <input type="file" id="file" onChange={handleFileChange} />
-      
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={handleUpload}>Upload</button>
+      <p>
+        Simply upload a video to double its framerate. For more information on what this service does, just check out <a href="https://en.wikipedia.org/wiki/Motion_interpolation">this handy Wikipedia article!</a>
+      </p>
+
+      <div style={{ marginTop:"2rem" }}>
+        <label htmlFor="file">Select video file:</label>
+        <input id="uploadFile" type="file" onChange={handleFileChange} />
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleUpload}>Upload New Video</button>
+        </div>
+      </div>
+
+      <div style={{ marginTop:"2rem" }}>
+        <label htmlFor="file">Or maybe you already have a video file you want to check:</label>
+        <input id="inputFileName" type="text" onChange={handleInputFileChange} placeholder="Enter filename..."></input>
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleSwitchToStatus}>View File Status</button>
+        </div>
       </div>
 
       {infoMessage && (
-        <p style={{ marginTop: '1rem', color: '#fbfcfc' }}>{infoMessage}</p>
+        <div style={{ marginTop: '1rem', color: '#fbfcfc' }}>{infoMessage}</div>
       )}
+
     </div>
   );
 }

@@ -63,7 +63,7 @@ function StatusPage() {
       {!error && (
         <>
           <p>
-            Feel free to save the URL and check the status again at any time!
+            Feel free to save the URL and/or filename to check the status again at any time!
           </p>
           <p>
             Checking status for:
