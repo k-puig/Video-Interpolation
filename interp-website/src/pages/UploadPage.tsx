@@ -59,7 +59,8 @@ function UploadPage() {
     <div className="container">
       <h1>Video Interpolator</h1>
       <p>
-        Simply upload a video to double its framerate. For more information on what this service does, just check out <a href="https://en.wikipedia.org/wiki/Motion_interpolation">this handy Wikipedia article!</a>
+        Simply upload a video to double its framerate. For more information on what this service
+        does, just check out our about page at the top.
       </p>
 
       <div style={{ marginTop:"2rem" }}>
