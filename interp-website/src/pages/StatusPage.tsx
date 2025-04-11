@@ -38,7 +38,7 @@ function StatusPage() {
     return () => {
       clearInterval(interval);
     };
-  }, [fileParam]);
+  }, [fileParam, error]);
 
   const getStatusMessage = () => {
     switch (status) {
@@ -65,8 +65,11 @@ function StatusPage() {
   };
 
   const handleSwitchStatus = () => {
-    setFileParam(inputFileName);
-    setError('')
+    if (inputFileName.length > 0)
+      setFileParam(inputFileName);
+    else
+      setFileParam(null);
+    setError('');
   };
   
 
