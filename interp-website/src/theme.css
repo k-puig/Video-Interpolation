@@ -20,6 +20,10 @@
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
+p {
+  margin: 1rem auto;
+}
+
 h1, h2, h3 {
   color: var(--color-accent-purple);
   margin-bottom: 1rem;
