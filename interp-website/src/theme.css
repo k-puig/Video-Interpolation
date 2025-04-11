@@ -1,0 +1,32 @@
+/* Additional dedicated colors, gradients, etc. */
+
+:root {
+  --color-bg: #1e1b2e;
+  --color-bg-layer: #2b2741;
+  --color-card: #2b2741;
+  --color-accent-green: #4ef4c2;
+  --color-accent-blue: #3dbfea;
+  --color-accent-purple: #b273f3;
+  --text-color: #e0e0e0;
+}
+
+/* Container styling for layout */
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background-color: var(--color-card);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+h1, h2, h3 {
+  color: var(--color-accent-purple);
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  color: var(--color-accent-green);
+}
