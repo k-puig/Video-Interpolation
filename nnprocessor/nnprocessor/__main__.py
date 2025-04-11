@@ -25,7 +25,7 @@ def fulltrain(model, discriminator):
     validateset = ds.VideoFolderDataset("train_data/validate", csv_cache="train_data/validate.csv")
     testset = ds.VideoFolderDataset("train_data/test", csv_cache="train_data/test.csv")
     
-    print(trainer.run(trainset, testset, validateset, subset_size=5000, epochs=100, batch_size=12, autosave=True))
+    print(trainer.run(trainset, testset, validateset, subset_size=5000, epochs=200, batch_size=12, autosave=True))
 
 def queueclient(model):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -35,7 +35,12 @@ def queueclient(model):
 def main() -> int:
     model = md.Interpolator().half()
     discriminator = md.Discriminator().half()
-    fulltrain(model, discriminator)
+    try:
+        fulltrain(model, discriminator)
+    except KeyboardInterrupt as k:
+        print("\n\nTraining has been interrupted!", flush=True)
+    except BaseException as e:
+        print(e)
     queueclient(model)
     return 0
 

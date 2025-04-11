@@ -40,40 +40,43 @@ class Trainer():
         total_items = 0
         print(f"{total_items}/{subset_size}", end="", flush=True)
         for batch in dataloader:
-            # Load the input/output data
-            left_frame, interp_frame, right_frame = [x.to(self.device).half() for x in batch]
-            batch_size = batch[0].size(0)
-            real_is_real = torch.ones((batch_size, 1), device=self.device).half()
-            fake_is_real = torch.zeros((batch_size, 1), device=self.device).half()
+            try:
+                # Load the input/output data
+                left_frame, interp_frame, right_frame = [x.to(self.device).half() for x in batch]
+                batch_size = batch[0].size(0)
+                real_is_real = torch.ones((batch_size, 1), device=self.device).half()
+                fake_is_real = torch.zeros((batch_size, 1), device=self.device).half()
 
-            # Train the discriminator
-            optimizer_disc.zero_grad()
-            output_disc_real = self.discriminator(left_frame, interp_frame, right_frame)
-            loss_disc_real = bce_loss(output_disc_real, real_is_real)
+                # Train the discriminator
+                optimizer_disc.zero_grad()
+                output_disc_real = self.discriminator(left_frame, interp_frame, right_frame)
+                loss_disc_real = bce_loss(output_disc_real, real_is_real)
 
-            fake_frame = self.generator(left_frame, right_frame).detach()
-            output_disc_fake = self.discriminator(left_frame, fake_frame, right_frame)
-            loss_disc_fake = bce_loss(output_disc_fake, fake_is_real)
+                fake_frame = self.generator(left_frame, right_frame).detach()
+                output_disc_fake = self.discriminator(left_frame, fake_frame, right_frame)
+                loss_disc_fake = bce_loss(output_disc_fake, fake_is_real)
 
-            discriminator_loss = 0.5 * (loss_disc_real + loss_disc_fake)
-            discriminator_loss.backward()
-            optimizer_disc.step()
+                discriminator_loss = 0.5 * (loss_disc_real + loss_disc_fake)
+                discriminator_loss.backward()
+                optimizer_disc.step()
 
-            # Train the interpolator
-            optimizer_gen.zero_grad()
-            fake_frame = self.generator(left_frame, right_frame)
-            
-            output_disc_for_gen = self.discriminator(left_frame, fake_frame, right_frame)
-            
-            adversarial_loss = bce_loss(output_disc_for_gen, real_is_real)
-            pixel_loss = mse_loss(fake_frame, interp_frame)
-            
-            generator_loss = 0.8 * adversarial_loss + 0.2 * pixel_loss
-            generator_loss.backward()
-            optimizer_gen.step()
+                # Train the interpolator
+                optimizer_gen.zero_grad()
+                fake_frame = self.generator(left_frame, right_frame)
+                
+                output_disc_for_gen = self.discriminator(left_frame, fake_frame, right_frame)
+                
+                adversarial_loss = bce_loss(output_disc_for_gen, real_is_real)
+                pixel_loss = mse_loss(fake_frame, interp_frame)
+                
+                generator_loss = 0.8 * adversarial_loss + 0.2 * pixel_loss
+                generator_loss.backward()
+                optimizer_gen.step()
 
-            total_loss += generator_loss.item() * batch_size
-            total_items += batch_size
+                total_loss += generator_loss.item() * batch_size
+                total_items += batch_size
+            except Exception as e:
+                print(e, flush=True)
             print("\r                                                                ", end="\r")
             print(f"{total_items}/{subset_size}", end="", flush=True)
         print("\r                                                                ", end="\r", flush=True)
