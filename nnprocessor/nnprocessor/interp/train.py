@@ -44,8 +44,8 @@ class Trainer():
                 # Load the input/output data
                 left_frame, interp_frame, right_frame = [x.to(self.device).half() for x in batch]
                 batch_size = batch[0].size(0)
-                real_is_real = torch.ones((batch_size, 1), device=self.device).half()
-                fake_is_real = torch.zeros((batch_size, 1), device=self.device).half()
+                real_is_real = torch.ones((batch_size, 1), device=self.device, dtype=torch.float16)
+                fake_is_real = torch.zeros((batch_size, 1), device=self.device, dtype=torch.float16)
 
                 # Train the discriminator
                 optimizer_disc.zero_grad()
